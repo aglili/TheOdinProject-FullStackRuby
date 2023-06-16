@@ -50,7 +50,7 @@ class UserLoginSerializer(serializers.Serializer):
     def create_token(self, validated_data):
         user = authenticate(username=validated_data['username'], password=validated_data['password'])
         if not user:
-            return {"error": "Invalid credentials", "data": {}}
+            raise {"error": "Invalid credentials", "data": {}}
         refresh = RefreshToken.for_user(user)
         return {
             'refresh': str(refresh),
