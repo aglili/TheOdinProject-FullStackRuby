@@ -13,12 +13,12 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 
 
     def validate_username(self, value):
-        if CustomUser.objects.filter(username=value['username']).exists():
+        if CustomUser.objects.filter(username=value['username'].lower()).exists():
             raise serializers.ValidationError({"error":"Username Already Exists"})
         return value
     
     def validate_email(self,value):
-        if CustomUser.objects.filter(email=value['email']).exists():
+        if CustomUser.objects.filter(email=value['email'].lower()).exists():
             raise serializers.ValidationError({"error":"Email Has Already Been Used"})
         return value
 
@@ -26,6 +26,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if 'username' in data:
             data['username'] = data['username'].lower()
+            data['email'] = data['email'].lower()
         return data
     
     def create(self, validated_data):
