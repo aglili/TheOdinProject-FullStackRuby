@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+
 # Create your views here.
 @api_view(["POST"])
 def userSignUpView(request):
@@ -47,6 +48,8 @@ def userLogoutView(request):
             return Response({'detail': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
     
     return Response({'detail': 'Token not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
