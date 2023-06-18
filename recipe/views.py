@@ -30,3 +30,31 @@ def getUserRecipeList(request):
     serializer = RecipeSerializer(recipes, many=True)
     return Response(serializer.data)
 
+
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def getRecipe(request):
+    title = request.GET.get('title')
+    try:
+        recipe = Recipes.objects.get(title=title)
+        serializer = RecipeSerializer(recipe)
+        return Response(serializer.data)
+    except Recipes.DoesNotExist:
+        return Response({"error": "Recipe not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteRecipe(request):
+    try:
+        title = request.GET.get('title')
+        recipe = Recipes.objects.get(title=title)
+        if recipe.chef != request.user:
+            return Response({'error': 'You are not authorized to delete this recipe.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        recipe.delete()
+        return Response({'message': 'Recipe deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except Recipes.DoesNotExist:
+        return Response({'error': 'Recipe not found.'}, status=status.HTTP_404_NOT_FOUND)
