@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recipes
+from .models import Recipe
 
 
 
@@ -9,13 +9,13 @@ from .models import Recipes
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Recipes
+        model = Recipe
         fields = ['title','instructions','diet_type','meal_type','difficulty','time','food_image']
 
 
     def create(self, validated_data):
         chef = self.context['request'].user
-        recipe = Recipes.objects.create(
+        recipe = Recipe.objects.create(
             title=validated_data['title'],
             instructions=validated_data['instructions'],
             diet_type=validated_data['diet_type'],

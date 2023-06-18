@@ -9,7 +9,7 @@ from accounts.models import CustomUser
 
 
 
-class Recipes(models.Model):
+class Recipe(models.Model):
     RECIPE_CATEGORY = [
         ("french", "French"),
         ("italian", "Italian"),

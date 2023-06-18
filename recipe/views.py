@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Recipes
+from .models import Recipe
 
 # Create your views here.
 
@@ -26,7 +26,7 @@ def createRecipe(request):
 @permission_classes([IsAuthenticated])
 def getUserRecipeList(request):
     user = request.user
-    recipes = Recipes.objects.filter(chef=user)
+    recipes = Recipe.objects.filter(chef=user)
     serializer = RecipeSerializer(recipes, many=True)
     return Response(serializer.data)
 
@@ -38,10 +38,10 @@ def getUserRecipeList(request):
 def getRecipe(request):
     title = request.GET.get('title')
     try:
-        recipe = Recipes.objects.get(title=title)
+        recipe = Recipe.objects.get(title=title)
         serializer = RecipeSerializer(recipe)
         return Response(serializer.data)
-    except Recipes.DoesNotExist:
+    except Recipe.DoesNotExist:
         return Response({"error": "Recipe not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -50,11 +50,31 @@ def getRecipe(request):
 def deleteRecipe(request):
     try:
         title = request.GET.get('title')
-        recipe = Recipes.objects.get(title=title)
+        recipe = Recipe.objects.get(title=title)
         if recipe.chef != request.user:
             return Response({'error': 'You are not authorized to delete this recipe.'}, status=status.HTTP_403_FORBIDDEN)
         
         recipe.delete()
         return Response({'message': 'Recipe deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
-    except Recipes.DoesNotExist:
+    except Recipe.DoesNotExist:
+        return Response({'error': 'Recipe not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def editRecipe(request):
+    try:
+        title = request.GET.get('title')
+        recipe = Recipe.objects.get(title=title)
+        if recipe.chef != request.user:
+            return Response({'error': 'You are not authorized to edit this recipe.'}, status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        
+        serializer = RecipeSerializer(recipe, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=400)
+    except Recipe.DoesNotExist:
         return Response({'error': 'Recipe not found.'}, status=status.HTTP_404_NOT_FOUND)
