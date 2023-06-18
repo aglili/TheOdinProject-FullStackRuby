@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework import status
+from .models import Recipes
 
 # Create your views here.
 
@@ -18,4 +19,14 @@ def createRecipe(request):
         serializer.save()
         return Response({"message":"recipe created"},status=status.HTTP_200_OK)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def getUserRecipeList(request):
+    user = request.user
+    recipes = Recipes.objects.filter(chef=user)
+    serializer = RecipeSerializer(recipes, many=True)
+    return Response(serializer.data)
 
