@@ -31,15 +31,27 @@ class Recipes(models.Model):
         ("hard", "Hard"),
     ]
 
+    MEAL_TYPE =[
+        ("breakfast","Breakfast"),
+        ("brunch","Brunch"),
+        ("lunch","Lunch"),
+        ("snack","Snack"),
+        ("supper","Supper"),
+        ("dessert","Dessert")
+    ]
+
     
     title = models.CharField(max_length=100)
     instructions = models.TextField()
-    category = models.CharField(max_length=100,choices=RECIPE_CATEGORY)
     chef = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-    diet = models.CharField(max_length=100,choices=DIET_CATEGORY)
+    diet_type = models.CharField(max_length=100,choices=DIET_CATEGORY)
+    meal_type = models.CharField(max_length=100,choices=MEAL_TYPE,default="")
     difficulty = models.CharField(max_length=100,choices=DIFFICULTY_LEVEL)
     time = models.DurationField()
     food_image = models.ImageField(upload_to='food/images')
+    
 
     def __str__(self) -> str:
-        return f"Recipe:{self.title} by Chef{self.chef.username}"
+        return f"Recipe:{self.title} by Chef {self.chef.username}"
+    
+
