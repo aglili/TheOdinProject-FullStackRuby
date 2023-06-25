@@ -25,4 +25,5 @@ class RecipeSerializer(serializers.ModelSerializer):
             food_image=validated_data['food_image'],
             chef = chef
         )
+        recipe.save()
         return recipe

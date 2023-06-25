@@ -8,5 +8,7 @@ urlpatterns = [
     path("get-recipe/",views.getRecipe,name='get_recipe_by_title'),
     path("delete/",views.deleteRecipe,name="delete_recipe_by_title"),
     path("edit/",views.editRecipe,name="update_recipe_by_title"),
+    path("like/",views.likeRecipe,name="like_recipe"),
+    path("liked/",views.getLikedRecipes,name="get_user_liked_recipes")
 
 ]

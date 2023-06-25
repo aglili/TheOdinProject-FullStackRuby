@@ -82,24 +82,38 @@ def editRecipe(request):
     
 
 @api_view(['POST'])
-@permission_classes(IsAuthenticated)
+@permission_classes([IsAuthenticated])
 def likeRecipe(request):
-    recipe_id = request.GET.get('recipe')
-    user = request.user
-    recipe = Recipe.objects.get(id=recipe_id)
-    like = Like(user=user, recipe=recipe)
-    like.save()
-    return Response({
-        "message":"Recipe Liked"
-    },status=status.HTTP_201_CREATED)
-        
+    try:
+        recipe_id = request.data.get('recipe_id')
+        user = request.user
+        recipe = Recipe.objects.get(id=recipe_id)
+        like = Like(user=user, recipe=recipe)
+        like.save()
+        return Response({
+            "message": "Recipe Liked"
+        }, status=status.HTTP_201_CREATED)
+    except Recipe.DoesNotExist:
+        return Response({
+            "error": "Recipe not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getLikedRecipes(request):
-    user = CustomUser.objects.get(id=request.user)
-    liked_recipes = user.liked_recipes.all()
-    serializer = RecipeSerializer(liked_recipes,many=True)
-    return Response({
-        "liked recipes" : serializer.data,
-    },status=status.HTTP_200_OK)
+    try:
+        user = request.user
+        liked_recipes = user.liked_recipes.all()
+        serializer = RecipeSerializer(liked_recipes, many=True)
+        return Response({
+            "liked recipes": serializer.data,
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
