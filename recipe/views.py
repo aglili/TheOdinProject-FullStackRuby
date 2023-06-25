@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Recipe
+from .models import Recipe,Like
+from accounts.models import CustomUser
 
 # Create your views here.
 
@@ -78,3 +79,27 @@ def editRecipe(request):
             return Response(serializer.errors, status=400)
     except Recipe.DoesNotExist:
         return Response({'error': 'Recipe not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['POST'])
+@permission_classes(IsAuthenticated)
+def likeRecipe(request):
+    recipe_id = request.GET.get('recipe')
+    user = request.user
+    recipe = Recipe.objects.get(id=recipe_id)
+    like = Like(user=user, recipe=recipe)
+    like.save()
+    return Response({
+        "message":"Recipe Liked"
+    },status=status.HTTP_201_CREATED)
+        
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getLikedRecipes(request):
+    user = CustomUser.objects.get(id=request.user)
+    liked_recipes = user.liked_recipes.all()
+    serializer = RecipeSerializer(liked_recipes,many=True)
+    return Response({
+        "liked recipes" : serializer.data,
+    },status=status.HTTP_200_OK)
