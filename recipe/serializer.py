@@ -10,7 +10,7 @@ from .models import Recipe
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ['title','instructions','diet_type','meal_type','difficulty','time','food_image']
+        fields = ['id','title','instructions','diet_type','meal_type','difficulty','time','food_image']
 
 
     def create(self, validated_data):
@@ -26,4 +26,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             chef = chef
         )
         recipe.save()
-        return recipe
+        return 
+    
+
+

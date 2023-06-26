@@ -18,7 +18,9 @@ def createRecipe(request):
     serializer = RecipeSerializer(data=data,context={'request': request})
     if serializer.is_valid():
         serializer.save()
-        return Response({"message":"recipe created"},status=status.HTTP_200_OK)
+        return Response({
+            "message":"recipe created",
+            "data":serializer.data},status=status.HTTP_200_OK)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -85,7 +87,8 @@ def editRecipe(request):
 @permission_classes([IsAuthenticated])
 def likeRecipe(request):
     try:
-        recipe_id = request.data.get('recipe_id')
+        recipe_id = request.GET.get('recipe_id')
+        print(recipe_id)
         user = request.user
         recipe = Recipe.objects.get(id=recipe_id)
         like = Like(user=user, recipe=recipe)
@@ -113,6 +116,26 @@ def getLikedRecipes(request):
         return Response({
             "liked recipes": serializer.data,
         }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def deleteLike(request):
+    like_id = request.GET.get('like_id')
+    try:
+        like = Like.objects.get(id=like_id, user=request.user)
+        like.delete()
+        return Response({
+            "message": "Like deleted successfully"
+        }, status=status.HTTP_204_NO_CONTENT)
+    except Like.DoesNotExist:
+        return Response({
+            "error": "Like not found"
+        }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({
             "error": str(e)
