@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializer import RecipeSerializer
+from .serializer import RecipeSerializer,LikedRecipeSerializer
 from rest_framework.decorators import permission_classes,api_view,authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -111,8 +111,8 @@ def likeRecipe(request):
 def getLikedRecipes(request):
     try:
         user = request.user
-        liked_recipes = user.liked_recipes.all()
-        serializer = RecipeSerializer(liked_recipes, many=True)
+        liked_recipes = Recipe.objects.filter(likes__user=user)
+        serializer = LikedRecipeSerializer(liked_recipes,many=True)
         return Response({
             "liked recipes": serializer.data,
         }, status=status.HTTP_200_OK)

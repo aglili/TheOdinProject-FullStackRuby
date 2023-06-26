@@ -30,3 +30,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     
 
 
+class LikedRecipeSerializer:
+     class Meta:
+        model = Recipe
+        fields = ['id','title','instructions','diet_type','meal_type','difficulty','time','food_image']
+
