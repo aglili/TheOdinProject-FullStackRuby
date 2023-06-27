@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recipe
+from .models import Recipe,Like
 
 
 
@@ -30,8 +30,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     
 
 
-class LikedRecipeSerializer:
-     class Meta:
-        model = Recipe
-        fields = ['id','title','instructions','diet_type','meal_type','difficulty','time','food_image']
-
+class LikedRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'recipe']

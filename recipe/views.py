@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializer import RecipeSerializer,LikedRecipeSerializer
+from .serializer import RecipeSerializer
 from rest_framework.decorators import permission_classes,api_view,authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Recipe,Like
 from accounts.models import CustomUser
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -84,18 +85,50 @@ def editRecipe(request):
     
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def likeRecipe(request):
     try:
         recipe_id = request.GET.get('recipe_id')
-        print(recipe_id)
+        recipe = get_object_or_404(Recipe, id=recipe_id)
         user = request.user
-        recipe = Recipe.objects.get(id=recipe_id)
-        like = Like(user=user, recipe=recipe)
-        like.save()
+        like, created = Like.objects.get_or_create(chef=user, recipe=recipe)
+        if created:
+            return Response({
+                "message": "Recipe liked"
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                "message": "Recipe already liked"
+            }, status=status.HTTP_200_OK)
+    except Recipe.DoesNotExist:
         return Response({
-            "message": "Recipe Liked"
-        }, status=status.HTTP_201_CREATED)
+            "error": "Recipe not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def unlikeRecipe(request):
+    try:
+        recipe_id = request.GET.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        user = request.user
+        like = Like.objects.filter(chef=user, recipe=recipe)
+        if like.exists():
+            like.delete()
+            return Response({
+                "message": "Recipe unliked"
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "message": "Recipe was not liked by the user"
+            }, status=status.HTTP_200_OK)
     except Recipe.DoesNotExist:
         return Response({
             "error": "Recipe not found"
@@ -107,14 +140,15 @@ def likeRecipe(request):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def getLikedRecipes(request):
+def getLikedRecipesByUser(request):
     try:
         user = request.user
-        liked_recipes = Recipe.objects.filter(likes__user=user)
-        serializer = LikedRecipeSerializer(liked_recipes,many=True)
+        liked_recipes = Recipe.objects.filter(likes__username=user.username)
+        serializer = RecipeSerializer(liked_recipes, many=True)
         return Response({
-            "liked recipes": serializer.data,
+            "liked_recipes": serializer.data
         }, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({
@@ -122,21 +156,5 @@ def getLikedRecipes(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def deleteLike(request):
-    like_id = request.GET.get('like_id')
-    try:
-        like = Like.objects.get(id=like_id, user=request.user)
-        like.delete()
-        return Response({
-            "message": "Like deleted successfully"
-        }, status=status.HTTP_204_NO_CONTENT)
-    except Like.DoesNotExist:
-        return Response({
-            "error": "Like not found"
-        }, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({
-            "error": str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
