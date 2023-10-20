@@ -1,14 +1,15 @@
-friends = ["john","kwame","amarae","kwesi"]
+# enumerable methods
 
-invitation_list = []
+basket = ["pear","guava","tomato","orange","banana"]
 
-# for friend in friends do
-#   if friend != "john"
-#   invitation_list.push(friend)
-#   end
-# end
-
-# print invitation_list
+fruits  = []
 
 
-print friends.select{|friend| friend != "john"}
+for item in basket do
+  if item != "tomato"
+    fruits.push(item)
+  end
+end
+
+
+print fruits
